@@ -6,6 +6,11 @@
 
 <br>
 
+> [!IMPORTANT]  
+> В связи с блокировками РКН и общей нестабильностью интернета на территории РФ для работы скрипта **ОБЯЗАТЕЛЕН ВКЛЮЧЕННЫЙ VPN**. Я не могу гарантировать исправность сервиса для пользователей, находящихся в РФ.
+
+<br>
+
 ## Установка 🎓
 
 1. Установите одно из расширений для запуска пользовательских скриптов:
@@ -16,7 +21,7 @@
     - [Userscripts](https://github.com/quoid/userscripts)
 
 2. [Разрешите выполнение userscript’ов и режим разработчика](https://www.tampermonkey.net/faq.php?locale=ru#Q209) в вашем браузере.
-4. Установите скрипт, перейдя по [этой ссылке](https://github.com/Kirlovon/Tape-Operator/raw/main/userscript/tape-operator.user.js). _(либо скачайте `tape-operator.user.js` из папки `userscript` и установите вручную)_
+3. Установите скрипт, перейдя по [этой ссылке](https://github.com/Kirlovon/Tape-Operator/raw/main/userscript/tape-operator.user.js). _(либо скачайте `tape-operator.user.js` из папки `userscript` и установите вручную)_
 
 Готово, теперь откройте страницу с фильмом на одном из поддерживаемых сайтов _([пример](https://letterboxd.com/film/babylon-2022/))_ и нажмите на флажок в левом верхнем углу!
 
