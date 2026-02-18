@@ -18,7 +18,16 @@
         <!-- Player window -->
         <div id="player">
             <div id="header">
-                <div id="title"></div>
+                <div id="title">
+                    <button id="title-picker-toggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+                        <span id="title-picker-value">Выберите из просмотренных</span>
+                        <span id="title-picker-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div id="title-picker-panel" class="hidden">
+                        <input id="title-search" type="search" placeholder="Поиск по названию..." autocomplete="off">
+                        <div id="title-options" role="listbox"></div>
+                    </div>
+                </div>
                 <div id="logo">
                     <img src="assets/logo.svg" alt="Tape Operator Logo">
                 </div>
