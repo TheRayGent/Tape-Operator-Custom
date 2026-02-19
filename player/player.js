@@ -359,7 +359,7 @@ function getWatchedMovies() {
 function renderMovieLinks(movies, selectedMovieKey) {
 	watchedMoviesListElement.innerHTML = '';
 
-	if (movies.length <= 1) {
+	if (movies.length == 0) {
 		const emptyState = document.createElement('span');
 		emptyState.className = 'movie-list-empty';
 		emptyState.textContent = 'Nothing found';
