@@ -3,12 +3,11 @@
 const containerElement = document.getElementById('container');
 const playerElement = document.getElementById('player');
 const titleElement = document.getElementById('title');
-const titlePickerToggleElement = document.getElementById('title-picker-toggle');
-const titlePickerValueElement = document.getElementById('title-picker-value');
-const titlePickerArrowElement = document.getElementById('title-picker-arrow');
-const titlePickerPanelElement = document.getElementById('title-picker-panel');
-const titleSearchElement = document.getElementById('title-search');
-const titleOptionsElement = document.getElementById('title-options');
+const watchedMoviesToggleElement = document.getElementById('watched-movies-toggle');
+const watchedMoviesCountElement = document.getElementById('watched-movies-count');
+const watchedMoviesPanelElement = document.getElementById('watched-movies-panel');
+const watchedMoviesSearchElement = document.getElementById('watched-movies-search');
+const watchedMoviesListElement = document.getElementById('watched-movies-list');
 const versionElement = document.getElementById('version');
 const contentElement = document.getElementById('content');
 const sourcesElement = document.getElementById('sources');
@@ -78,6 +77,9 @@ async function init(data, scriptVersion) {
 			setTitle(movieData.title);
 			sendAnalytics(movieData);
 		}
+
+		// Update watched movies panel with new movie
+		updateWatchedMoviesPanel();
 
 		// Check player version if provided
 		if (typeof scriptVersion === 'string') checkVersion(scriptVersion);
@@ -188,8 +190,8 @@ function selectSource(sourceData) {
  */
 function setTitle(title) {
 	document.title = `${title} | Tape Operator`;
-	if (titlePickerValueElement) {
-		titlePickerValueElement.innerHTML = title?.replace(/\((.*)/, (match, content) => `<span>(${content}</span>`);
+	if (titleElement) {
+		titleElement.innerHTML = title?.replace(/\((.*)/, (match, content) => `<span>(${content}</span>`);
 	}
 }
 
@@ -317,10 +319,10 @@ function sendAnalytics(movieData) {
 }
 
 /**
- * Get cached movies from local storage
+ * Get watched movies from local storage
  * @returns {{ key: string, title: string }[]}
  */
-function getCachedMovies() {
+function getWatchedMovies() {
 	const movies = [];
 
 	for (let index = 0; index < localStorage.length; index += 1) {
@@ -350,159 +352,119 @@ function getCachedMovies() {
 }
 
 /**
- * Render select options for cached movies
+ * Render movie links for watched movies
  * @param {{ key: string, title: string }[]} movies
  * @param {string} selectedMovieKey
  */
-function renderMovieOptions(movies, selectedMovieKey) {
-	titleOptionsElement.innerHTML = '';
+function renderMovieLinks(movies, selectedMovieKey) {
+	watchedMoviesListElement.innerHTML = '';
 
-	if (movies.length === 0) {
+	if (movies.length <= 1) {
 		const emptyState = document.createElement('span');
-		emptyState.className = 'movie-options-empty';
-		emptyState.textContent = 'Ничего не найдено';
-		titleOptionsElement.appendChild(emptyState);
+		emptyState.className = 'movie-list-empty';
+		emptyState.textContent = 'Nothing found';
+		watchedMoviesListElement.appendChild(emptyState);
 		return;
 	}
 
 	movies.forEach((movie) => {
-		const option = document.createElement('button');
-		option.type = 'button';
-		option.className = 'movie-option';
-		option.textContent = movie.title;
-		option.dataset.key = movie.key;
+		const link = document.createElement('a');
+		link.href = `?movie=${movie.key}`;
+		link.className = 'movie-link';
+		link.textContent = movie.title;
 
-		if (movie.key === selectedMovieKey) option.classList.add('selected');
-
-		titleOptionsElement.appendChild(option);
+		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
+		watchedMoviesListElement.appendChild(link);
 	});
 }
 
 /**
- * Set current movie title in picker field
- * @param {{ key: string, title: string }[]} movies
- * @param {string} movieKey
- */
-function setMoviePickerValue(movies, movieKey) {
-	const selectedMovie = movies.find((movie) => movie.key === movieKey);
-	const selectedTitle = selectedMovie?.title ?? 'Выберите из просмотренных';
-	titlePickerValueElement.innerHTML = selectedTitle.replace(/\((.*)/, (match, content) => `<span>(${content}</span>`);
-}
-
-/**
- * Toggle movie picker panel
+ * Toggle watched movies panel
  * @param {boolean} isOpen
  */
-function toggleMoviePicker(isOpen) {
-	titleElement.classList.toggle('open', isOpen);
-	titlePickerPanelElement.classList.toggle('hidden', !isOpen);
-	titlePickerToggleElement.setAttribute('aria-expanded', String(isOpen));
-
-	if (isOpen) titleSearchElement.focus();
+function toggleWatchedMoviesPanel(isOpen) {
+	watchedMoviesToggleElement.classList.toggle('open', isOpen);
+	watchedMoviesPanelElement.classList.toggle('hidden', !isOpen);
+	watchedMoviesToggleElement.setAttribute('aria-expanded', String(isOpen));
+	if (isOpen) watchedMoviesSearchElement.focus();
 }
 
 /**
- * Setup movie picker from cached movies in local storage
+ * Update list of watched movies in the panel, update count and button state
  */
-function setupMoviePicker() {
-	if (!titleElement || !titlePickerToggleElement || !titlePickerValueElement || !titlePickerPanelElement || !titleSearchElement || !titleOptionsElement) {
-		logger.warn('Movie picker setup skipped: required DOM elements were not found');
+function updateWatchedMoviesPanel() {
+	if (!watchedMoviesToggleElement || !watchedMoviesCountElement || !watchedMoviesListElement) {
 		return;
 	}
 
-	// Load previously watched movies from local storage
-	const cachedMovies = getCachedMovies();
-	if (cachedMovies.length === 0) {
-		// Disable picker when there are no cached movies yet
-		titlePickerValueElement.textContent = 'Нет просмотренных фильмов';
-		titlePickerToggleElement.setAttribute('aria-expanded', 'false');
-		titlePickerToggleElement.disabled = true;
-		if (titlePickerArrowElement) titlePickerArrowElement.style.display = 'none';
+	// Load watched movies from local storage
+	const watchedMovies = getWatchedMovies();
+
+	// Update button text with count
+	const movieCount = watchedMovies.length;
+	const countText = `${movieCount} movies watched`;
+	watchedMoviesCountElement.textContent = countText;
+
+	// Disable button when there are no watched movies yet
+	if (watchedMovies.length <= 1) {
+		watchedMoviesToggleElement.setAttribute('aria-expanded', 'false');
+		watchedMoviesToggleElement.disabled = true;
 		return;
 	}
 
-	// Render initial picker state for the current movie
-	titleElement.classList.remove('hidden');
-	setMoviePickerValue(cachedMovies, currentMovieKey);
-	renderMovieOptions(cachedMovies, currentMovieKey);
+	// Enable button
+	watchedMoviesToggleElement.disabled = false;
 
-	let pointerStartX = 0;
-	let pointerStartY = 0;
-	let pointerMoved = false;
+	// Render list of movies
+	const searchQuery = watchedMoviesSearchElement?.value?.trim()?.toLowerCase() || '';
+	const filteredMovies = searchQuery ? watchedMovies.filter((movie) => movie.title.toLowerCase().includes(searchQuery)) : watchedMovies;
+	renderMovieLinks(filteredMovies, currentMovieKey);
+}
 
-	// Track pointer position to ignore drag-like clicks on the toggle
-	titlePickerToggleElement.addEventListener('mousedown', (event) => {
-		pointerStartX = event.clientX;
-		pointerStartY = event.clientY;
-		pointerMoved = false;
-	});
+/**
+ * Setup watched movies panel event listeners
+ */
+function setupWatchedMoviesPanel() {
+	if (!watchedMoviesToggleElement || !watchedMoviesCountElement || !watchedMoviesPanelElement || !watchedMoviesSearchElement || !watchedMoviesListElement) {
+		logger.warn('Watched movies panel setup skipped: required DOM elements were not found');
+		return;
+	}
 
-	titlePickerToggleElement.addEventListener('mousemove', (event) => {
-		if ((event.buttons & 1) !== 1) return;
+	// Initial update
+	updateWatchedMoviesPanel();
 
-		const deltaX = event.clientX - pointerStartX;
-		const deltaY = event.clientY - pointerStartY;
-		if (Math.hypot(deltaX, deltaY) > 3) pointerMoved = true;
-	});
-
-	titlePickerToggleElement.addEventListener('click', () => {
-		if (pointerMoved) return;
-
-		// Toggle picker panel visibility
-		const isOpen = titlePickerPanelElement.classList.contains('hidden');
-		toggleMoviePicker(isOpen);
+	// Toggle panel on button click
+	watchedMoviesToggleElement.addEventListener('click', () => {
+		const isOpen = watchedMoviesPanelElement.classList.contains('hidden');
+		toggleWatchedMoviesPanel(isOpen);
 	});
 
 	// Filter available movies by the search query
-	titleSearchElement.addEventListener('input', () => {
-		const query = titleSearchElement.value.trim().toLowerCase();
-		const filteredMovies = query ? cachedMovies.filter((movie) => movie.title.toLowerCase().includes(query)) : cachedMovies;
-
-		renderMovieOptions(filteredMovies, currentMovieKey);
+	watchedMoviesSearchElement.addEventListener('input', () => {
+		updateWatchedMoviesPanel();
 	});
 
-	// Load selected movie from cache and re-initialize the player
-	titleOptionsElement.addEventListener('click', (event) => {
-		const option = event.target.closest('.movie-option');
-		if (!option) return;
-
-		const selectedMovieKey = option.dataset.key;
-		if (!selectedMovieKey || selectedMovieKey === currentMovieKey) return;
-
-		const selectedMovieData = localStorage.getItem(selectedMovieKey);
-		if (!selectedMovieData) return;
-
-		let movieData = null;
-		try {
-			movieData = JSON.parse(selectedMovieData);
-		} catch {
-			return;
-		}
-
-		if (typeof movieData !== 'object' || movieData === null) return;
-
-		currentMovieKey = selectedMovieKey;
-		setSearchParam('movie', selectedMovieKey);
-		setMoviePickerValue(cachedMovies, currentMovieKey);
-		renderMovieOptions(cachedMovies, currentMovieKey);
-		toggleMoviePicker(false);
-		titleSearchElement.value = '';
-		init(movieData);
-	});
-
-	// Close picker when clicking outside of the title area
+	// Close panel when clicking outside
 	document.addEventListener('click', (event) => {
-		if (!titleElement.contains(event.target)) toggleMoviePicker(false);
+		const isClickInside = watchedMoviesToggleElement.contains(event.target) || watchedMoviesPanelElement.contains(event.target);
+		if (!isClickInside) toggleWatchedMoviesPanel(false);
+	});
+
+	// Close panel when pressing Escape key
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape') toggleWatchedMoviesPanel(false);
 	});
 }
 
 /**
- * Setup the script by setting up timeout and getting cached movie data from URL
+ * Setup the script by setting up timeout and getting watched movie data from URL
  */
 function setup() {
 	try {
 		logger.info('Setup started');
-		setupMoviePicker();
+
+		// Setup watched movies panel with movies from local storage
+		setupWatchedMoviesPanel();
 
 		// Get cached movie key from URL
 		const movieKey = getSearchParam('movie');
