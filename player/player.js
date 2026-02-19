@@ -376,36 +376,6 @@ function renderMovieLinks(movies, selectedMovieKey) {
 		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
 		watchedMoviesListElement.appendChild(link);
 	});
-
-	movies.forEach((movie) => {
-		const link = document.createElement('a');
-		link.href = `?movie=${movie.key}`;
-		link.className = 'movie-link';
-		link.textContent = movie.title;
-
-		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
-		watchedMoviesListElement.appendChild(link);
-	});
-
-	movies.forEach((movie) => {
-		const link = document.createElement('a');
-		link.href = `?movie=${movie.key}`;
-		link.className = 'movie-link';
-		link.textContent = movie.title;
-
-		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
-		watchedMoviesListElement.appendChild(link);
-	});
-
-	movies.forEach((movie) => {
-		const link = document.createElement('a');
-		link.href = `?movie=${movie.key}`;
-		link.className = 'movie-link';
-		link.textContent = movie.title;
-
-		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
-		watchedMoviesListElement.appendChild(link);
-	});
 }
 
 /**
