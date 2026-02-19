@@ -78,6 +78,9 @@ async function init(data, scriptVersion) {
 			sendAnalytics(movieData);
 		}
 
+		// Update watched movies panel with new movie
+		updateWatchedMoviesPanel();
+
 		// Check player version if provided
 		if (typeof scriptVersion === 'string') checkVersion(scriptVersion);
 
@@ -356,10 +359,10 @@ function getWatchedMovies() {
 function renderMovieLinks(movies, selectedMovieKey) {
 	watchedMoviesListElement.innerHTML = '';
 
-	if (movies.length === 0) {
+	if (movies.length <= 1) {
 		const emptyState = document.createElement('span');
 		emptyState.className = 'movie-list-empty';
-		emptyState.textContent = 'Ничего не найдено';
+		emptyState.textContent = 'Nothing found';
 		watchedMoviesListElement.appendChild(emptyState);
 		return;
 	}
@@ -370,7 +373,37 @@ function renderMovieLinks(movies, selectedMovieKey) {
 		link.className = 'movie-link';
 		link.textContent = movie.title;
 
-		if (movie.key === selectedMovieKey) link.classList.add('selected');
+		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
+		watchedMoviesListElement.appendChild(link);
+	});
+
+	movies.forEach((movie) => {
+		const link = document.createElement('a');
+		link.href = `?movie=${movie.key}`;
+		link.className = 'movie-link';
+		link.textContent = movie.title;
+
+		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
+		watchedMoviesListElement.appendChild(link);
+	});
+
+	movies.forEach((movie) => {
+		const link = document.createElement('a');
+		link.href = `?movie=${movie.key}`;
+		link.className = 'movie-link';
+		link.textContent = movie.title;
+
+		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
+		watchedMoviesListElement.appendChild(link);
+	});
+
+	movies.forEach((movie) => {
+		const link = document.createElement('a');
+		link.href = `?movie=${movie.key}`;
+		link.className = 'movie-link';
+		link.textContent = movie.title;
+
+		if (`${movie.key}` === `${selectedMovieKey}`) link.classList.add('selected');
 		watchedMoviesListElement.appendChild(link);
 	});
 }
@@ -387,7 +420,39 @@ function toggleWatchedMoviesPanel(isOpen) {
 }
 
 /**
- * Setup watched movies panel from watched movies in local storage
+ * Update list of watched movies in the panel, update count and button state
+ */
+function updateWatchedMoviesPanel() {
+	if (!watchedMoviesToggleElement || !watchedMoviesCountElement || !watchedMoviesListElement) {
+		return;
+	}
+
+	// Load watched movies from local storage
+	const watchedMovies = getWatchedMovies();
+
+	// Update button text with count
+	const movieCount = watchedMovies.length;
+	const countText = `${movieCount} movies watched`;
+	watchedMoviesCountElement.textContent = countText;
+
+	// Disable button when there are no watched movies yet
+	if (watchedMovies.length <= 1) {
+		watchedMoviesToggleElement.setAttribute('aria-expanded', 'false');
+		watchedMoviesToggleElement.disabled = true;
+		return;
+	}
+
+	// Enable button
+	watchedMoviesToggleElement.disabled = false;
+
+	// Render list of movies
+	const searchQuery = watchedMoviesSearchElement?.value?.trim()?.toLowerCase() || '';
+	const filteredMovies = searchQuery ? watchedMovies.filter((movie) => movie.title.toLowerCase().includes(searchQuery)) : watchedMovies;
+	renderMovieLinks(filteredMovies, currentMovieKey);
+}
+
+/**
+ * Setup watched movies panel event listeners
  */
 function setupWatchedMoviesPanel() {
 	if (!watchedMoviesToggleElement || !watchedMoviesCountElement || !watchedMoviesPanelElement || !watchedMoviesSearchElement || !watchedMoviesListElement) {
@@ -395,23 +460,8 @@ function setupWatchedMoviesPanel() {
 		return;
 	}
 
-	// Load previously watched movies from local storage
-	const watchedMovies = getWatchedMovies();
-
-	// Update button text with count
-	const movieCount = watchedMovies.length;
-	const countText = movieCount === 1 ? '1 Watched Movie' : `${movieCount} Watched Movies`;
-	watchedMoviesCountElement.textContent = countText;
-
-	if (watchedMovies.length === 0) {
-		// Disable button when there are no watched movies yet
-		watchedMoviesToggleElement.setAttribute('aria-expanded', 'false');
-		watchedMoviesToggleElement.disabled = true;
-		return;
-	}
-
-	// Render initial list of movies
-	renderMovieLinks(watchedMovies, currentMovieKey);
+	// Initial update
+	updateWatchedMoviesPanel();
 
 	// Toggle panel on button click
 	watchedMoviesToggleElement.addEventListener('click', () => {
@@ -421,9 +471,7 @@ function setupWatchedMoviesPanel() {
 
 	// Filter available movies by the search query
 	watchedMoviesSearchElement.addEventListener('input', () => {
-		const query = watchedMoviesSearchElement.value.trim().toLowerCase();
-		const filteredMovies = query ? watchedMovies.filter((movie) => movie.title.toLowerCase().includes(query)) : watchedMovies;
-		renderMovieLinks(filteredMovies, currentMovieKey);
+		updateWatchedMoviesPanel();
 	});
 
 	// Close panel when clicking outside
