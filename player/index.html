@@ -18,18 +18,17 @@
         <!-- Player window -->
         <div id="player">
             <div id="header">
-                <div id="title">
-                    <button id="title-picker-toggle" type="button" aria-haspopup="listbox" aria-expanded="false">
-                        <span id="title-picker-value">...</span>
-                        <span id="title-picker-arrow" aria-hidden="true"></span>
-                    </button>
-                </div>
+                <div id="title">...</div>
+                <button id="watched-movies-toggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="watched-movies-count">0 watched movies</span>
+                    <span id="watched-movies-arrow" aria-hidden="true"></span>
+                </button>
                 <div id="logo">
                     <img src="assets/logo.svg" alt="Tape Operator Logo">
                 </div>
-                <div id="title-picker-panel" class="hidden">
-                    <div id="title-options" role="listbox"></div>
-                    <input id="title-search" type="search" placeholder="Поиск по названию..." autocomplete="off">
+                <div id="watched-movies-panel" class="hidden">
+                    <input id="watched-movies-search" type="search" placeholder="Search by name" autocomplete="off">
+                    <div id="watched-movies-list"></div>
                 </div>
             </div>
             <div id="content">

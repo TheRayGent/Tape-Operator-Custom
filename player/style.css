@@ -123,12 +123,13 @@ a:focus {
 	background-color: var(--color-bg);
 }
 
+/* Header Styles -------------------------------- */
+
 #logo {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	user-select: none;
-	margin-left: auto;
 	height: 100%;
 	margin-right: -0.75rem;
 	padding: 0 0.75rem;
@@ -142,83 +143,16 @@ a:focus {
 }
 
 #title {
-	position: relative;
-	display: flex;
-	align-items: center;
-	flex: 1;
-	margin-right: 0.75rem;
-}
-
-#title.hidden {
-	display: none;
-}
-
-#title-picker-toggle,
-#title-search {
-	all: unset;
-	box-sizing: border-box;
-	width: 100%;
-	max-width: 100%;
-	min-width: 0;
-	height: 2rem;
-	font-size: 0.85rem;
-	line-height: 2rem;
 	color: var(--color-white);
-}
-
-#title-picker-toggle {
-	display: flex;
-	align-items: center;
-	cursor: pointer;
-	justify-content: space-between;
-	user-select: text;
-	border: none;
-}
-
-#title-search {
-	border-radius: 4px;
-	border: 1px solid var(--color-border);
-	padding: 0 0.6rem;
-}
-
-#title-picker-toggle:disabled {
-	cursor: default;
-	opacity: 0.8;
-}
-
-#title-picker-value {
-	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	user-select: text;
+	margin-right: auto;
 }
 
-#title-picker-value span {
+#title span {
 	color: var(--color-grey);
 	font-style: normal;
-}
-
-#title-picker-arrow {
-	display: inline-block;
-	flex-shrink: 0;
-	width: 0.5rem;
-	height: 0.5rem;
-	margin-left: 0.65rem;
-	border-right: 2px solid var(--color-grey);
-	border-bottom: 2px solid var(--color-grey);
-	transform: translateY(0.1rem) rotate(45deg) scale(-100%);
-	transform-origin: center;
-	transition: transform 0.15s ease;
-}
-
-#title.open #title-picker-arrow {
-	transform: translateY(-0.1rem) rotate(45deg);
-	border-color: var(--color-white);
-}
-
-#title-search:focus {
-	border-color: var(--color-grey);
 }
 
 #version {
@@ -248,13 +182,77 @@ a:focus {
 	border-bottom: 1px solid var(--color-border);
 }
 
-#title-picker-panel {
+/* Watched Movies Panel Style -------------------------------- */
+
+#watched-movies-toggle {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	height: 100%;
+	padding: 0 0.75rem;
+	border: none;
+	white-space: nowrap;
+	user-select: none;
+	font-size: 0.85rem;
+	color: var(--color-grey);
+	transition: color 0.15s ease;
+	border-left: 1px solid var(--color-border);
+
+}
+
+#watched-movies-toggle:hover, #watched-movies-toggle.open {
+	color: var(--color-white);
+	cursor: pointer;
+}
+
+#watched-movies-toggle.open #watched-movies-arrow {
+	transform: translateY(-0.15rem) rotate(45deg);
+}
+
+#watched-movies-toggle:disabled {
+	display: none;
+}
+
+#watched-movies-arrow {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-right: 1px solid currentColor;
+	border-bottom: 1px solid currentColor;
+	transform: translateY(0.15rem) rotate(45deg) scale(-100%);
+	transform-origin: center;
+	transition: transform 0.15s ease;
+}
+
+#watched-movies-search {
+	all: unset;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	height: 2rem;
+	font-size: 0.85rem;
+	line-height: 2rem;
+	color: var(--color-white);
+	border-radius: 4px;
+	border: 1px solid var(--color-border);
+	padding: 0 0.6rem;
+}
+
+#watched-movies-search:focus {
+	border-color: var(--color-grey);
+}
+
+#watched-movies-panel {
 	position: absolute;
 	z-index: 10000;
 	top: 3rem;
-	left: 0.5rem;
-	right: 1rem;
-	width: calc(100% - 1rem);
+	right: 0.5rem;
+	width: min(calc(100% - 1rem), 320px);
 	box-sizing: border-box;
 	padding: 6px;
 	border-radius: 8px;
@@ -268,13 +266,13 @@ a:focus {
 	transition: opacity 0.1s ease, transform 0.15s ease;
 }
 
-#title-picker-panel.hidden {
+#watched-movies-panel.hidden {
 	opacity: 0;
-	transform: translateY(-0.25rem) scale(0.95);
+	transform: translateY(-0.5rem) scale(0.95);
 	pointer-events: none;
 }
 
-#title-options {
+#watched-movies-list {
 	width: 100%;
 	max-width: 100%;
 	max-height: 14rem;
@@ -285,32 +283,32 @@ a:focus {
 }
 
 @supports (-moz-appearance: none) {
-	#title-options {
+	#watched-movies-list {
 		scrollbar-width: thin;
 		scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
 	}
 }
 
-#title-options::-webkit-scrollbar {
+#watched-movies-list::-webkit-scrollbar {
 	width: 4px;
 	height: 4px;
 }
 
-#title-options::-webkit-scrollbar-track,
-#title-options::-webkit-scrollbar-corner {
+#watched-movies-list::-webkit-scrollbar-track,
+#watched-movies-list::-webkit-scrollbar-corner {
 	background: transparent;
 }
 
-#title-options::-webkit-scrollbar-thumb {
+#watched-movies-list::-webkit-scrollbar-thumb {
 	background-color: rgba(255, 255, 255, 0.3);
 	border-radius: 999px;
 }
 
-#title-options::-webkit-scrollbar-thumb:hover {
+#watched-movies-list::-webkit-scrollbar-thumb:hover {
 	background-color: rgba(255, 255, 255, 0.45);
 }
 
-.movie-option {
+.movie-link {
 	all: unset;
 	display: block;
 	cursor: pointer;
@@ -319,20 +317,32 @@ a:focus {
 	font-size: 0.8rem;
 	line-height: 1.2rem;
 	color: var(--color-white);
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.movie-option:hover,
-.movie-option:focus,
-.movie-option.selected {
+.movie-link:hover,
+.movie-link:focus {
 	background-color: rgba(255, 255, 255, 0.1);
+	text-decoration: none;
+	outline: none;
 }
 
-.movie-options-empty {
+.movie-link.selected {
+	background-color: rgba(255, 255, 255, 0.15);
+	font-weight: 500;
+}
+
+.movie-list-empty {
 	font-size: 0.75rem;
 	line-height: 1.2rem;
 	color: var(--color-grey);
 	padding: 0.25rem 0.2rem;
 }
+
+/* Footer Styles -------------------------------- */
 
 #sources {
 	overflow-x: auto;
