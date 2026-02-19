@@ -177,7 +177,7 @@ a:focus {
 
 #title-search {
 	border-radius: 4px;
-	border: 1px solid transparent;
+	border: 1px solid var(--color-border);
 	padding: 0 0.6rem;
 }
 
@@ -207,12 +207,14 @@ a:focus {
 	margin-left: 0.65rem;
 	border-right: 2px solid var(--color-grey);
 	border-bottom: 2px solid var(--color-grey);
-	transform: rotate(45deg);
+	transform: translateY(0.1rem) rotate(45deg) scale(-100%);
 	transform-origin: center;
+	transition: transform 0.15s ease;
 }
 
 #title.open #title-picker-arrow {
-	transform: rotate(-135deg);
+	transform: translateY(-0.1rem) rotate(45deg);
+	border-color: var(--color-white);
 }
 
 #title-search:focus {
@@ -249,24 +251,27 @@ a:focus {
 #title-picker-panel {
 	position: absolute;
 	z-index: 10000;
-	top: calc(100% - 0.1rem);
-	left: 0;
-	right: 0;
-	width: 100%;
-	max-width: 100%;
+	top: 3rem;
+	left: 0.5rem;
+	right: 1rem;
+	width: calc(100% - 1rem);
 	box-sizing: border-box;
-	padding: 0.5rem;
-	border-radius: 6px;
+	padding: 6px;
+	border-radius: 8px;
 	border: 1px solid var(--color-border);
+	outline: 2px solid var(--color-bg);
 	background-color: var(--color-bg);
 	display: flex;
 	flex-direction: column;
 	gap: 0.4rem;
-	box-shadow: 0 0.8rem 1.5rem rgba(0, 0, 0, 0.45);
+	box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.6);
+	transition: opacity 0.1s ease, transform 0.15s ease;
 }
 
 #title-picker-panel.hidden {
-	display: none;
+	opacity: 0;
+	transform: translateY(-0.25rem) scale(0.95);
+	pointer-events: none;
 }
 
 #title-options {
