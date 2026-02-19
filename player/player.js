@@ -1,13 +1,20 @@
-// True if globalThis.init function was successfully called
-let initialized = false;
+/// <reference path="./utils.js" />
 
 const containerElement = document.getElementById('container');
 const playerElement = document.getElementById('player');
 const titleElement = document.getElementById('title');
+const titlePickerToggleElement = document.getElementById('title-picker-toggle');
+const titlePickerValueElement = document.getElementById('title-picker-value');
+const titlePickerArrowElement = document.getElementById('title-picker-arrow');
+const titlePickerPanelElement = document.getElementById('title-picker-panel');
+const titleSearchElement = document.getElementById('title-search');
+const titleOptionsElement = document.getElementById('title-options');
 const versionElement = document.getElementById('version');
 const contentElement = document.getElementById('content');
 const sourcesElement = document.getElementById('sources');
 const backgroundElement = document.getElementById('background');
+
+let currentMovieKey = getSearchParam('movie') ?? '';
 
 /**
  * @typedef {object} MovieData
@@ -29,10 +36,7 @@ const initializationTimeoutTimer = setTimeout(() => {
  * @param {string} [scriptVersion] The version of the script
  */
 async function init(data, scriptVersion) {
-	if (initialized) return;
-
 	try {
-
 		// Stop initialization timeout timer
 		clearTimeout(initializationTimeoutTimer);
 
@@ -46,14 +50,15 @@ async function init(data, scriptVersion) {
 
 		// Cache movie data and set search param to allow page refresh and bookmarking
 		const key = cacheMovieData(movieData);
+		currentMovieKey = key;
 		setSearchParam('movie', key);
 
 		// Get available players sources
 		let sources = [];
 		try {
-			sources = await fetchSources(movieData)
+			sources = await fetchSources(movieData);
 		} catch (error) {
-			showPlayerText(':(')
+			showPlayerText(':(');
 			showServerUnavailableMessage();
 			logger.error('Error fetching data from server', error);
 			return;
@@ -79,14 +84,9 @@ async function init(data, scriptVersion) {
 
 		// Show background
 		backgroundElement.classList.add('visible');
-
-		// Mark as initialized
-		initialized = true;
-
 	} catch (error) {
-
 		// Remove loading spinner
-		showPlayerText(':(')
+		showPlayerText(':(');
 
 		logger.error('Error during initialization', error);
 		showInitializationErrorMessage();
@@ -128,6 +128,8 @@ async function fetchSources(movieData) {
  * @param {object[]} sourcesData
  */
 function setSources(sourcesData) {
+	// Reset previous source buttons before rendering new list
+	sourcesElement.innerHTML = '';
 
 	// Get preferred source from local storage
 	const preferredSource = localStorage.getItem('preferred-source');
@@ -186,7 +188,9 @@ function selectSource(sourceData) {
  */
 function setTitle(title) {
 	document.title = `${title} | Tape Operator`;
-	titleElement.innerHTML = title?.replace(/\((.*)/, (match, content) => `<span>(${content}</span>`);
+	if (titlePickerValueElement) {
+		titlePickerValueElement.innerHTML = title?.replace(/\((.*)/, (match, content) => `<span>(${content}</span>`);
+	}
 }
 
 /**
@@ -196,7 +200,7 @@ function setTitle(title) {
 function checkVersion(scriptVersion) {
 	if (REQUIRED_VERSION !== scriptVersion) {
 		try {
-			const numericRequiredVersion = parseVersion(REQUIRED_VERSION)
+			const numericRequiredVersion = parseVersion(REQUIRED_VERSION);
 			const numericScriptVersion = parseVersion(scriptVersion);
 
 			if (numericScriptVersion < numericRequiredVersion) {
@@ -313,15 +317,197 @@ function sendAnalytics(movieData) {
 }
 
 /**
+ * Get cached movies from local storage
+ * @returns {{ key: string, title: string }[]}
+ */
+function getCachedMovies() {
+	const movies = [];
+
+	for (let index = 0; index < localStorage.length; index += 1) {
+		const key = localStorage.key(index);
+		if (!key) continue;
+
+		let parsedData = null;
+		try {
+			const rawValue = localStorage.getItem(key);
+			if (!rawValue) continue;
+			parsedData = JSON.parse(rawValue);
+		} catch {
+			continue;
+		}
+
+		if (typeof parsedData !== 'object' || parsedData === null) continue;
+		if (typeof parsedData.title !== 'string') continue;
+
+		/** @type {string} */
+		const normalizedTitle = parsedData.title.trim();
+		if (!normalizedTitle) continue;
+
+		movies.push({ key, title: normalizedTitle });
+	}
+
+	return movies.sort((left, right) => left.title.localeCompare(right.title, 'ru'));
+}
+
+/**
+ * Render select options for cached movies
+ * @param {{ key: string, title: string }[]} movies
+ * @param {string} selectedMovieKey
+ */
+function renderMovieOptions(movies, selectedMovieKey) {
+	titleOptionsElement.innerHTML = '';
+
+	if (movies.length === 0) {
+		const emptyState = document.createElement('span');
+		emptyState.className = 'movie-options-empty';
+		emptyState.textContent = 'Ничего не найдено';
+		titleOptionsElement.appendChild(emptyState);
+		return;
+	}
+
+	movies.forEach((movie) => {
+		const option = document.createElement('button');
+		option.type = 'button';
+		option.className = 'movie-option';
+		option.textContent = movie.title;
+		option.dataset.key = movie.key;
+
+		if (movie.key === selectedMovieKey) option.classList.add('selected');
+
+		titleOptionsElement.appendChild(option);
+	});
+}
+
+/**
+ * Set current movie title in picker field
+ * @param {{ key: string, title: string }[]} movies
+ * @param {string} movieKey
+ */
+function setMoviePickerValue(movies, movieKey) {
+	const selectedMovie = movies.find((movie) => movie.key === movieKey);
+	const selectedTitle = selectedMovie?.title ?? 'Выберите из просмотренных';
+	titlePickerValueElement.innerHTML = selectedTitle.replace(/\((.*)/, (match, content) => `<span>(${content}</span>`);
+}
+
+/**
+ * Toggle movie picker panel
+ * @param {boolean} isOpen
+ */
+function toggleMoviePicker(isOpen) {
+	titleElement.classList.toggle('open', isOpen);
+	titlePickerPanelElement.classList.toggle('hidden', !isOpen);
+	titlePickerToggleElement.setAttribute('aria-expanded', String(isOpen));
+
+	if (isOpen) titleSearchElement.focus();
+}
+
+/**
+ * Setup movie picker from cached movies in local storage
+ */
+function setupMoviePicker() {
+	if (!titleElement || !titlePickerToggleElement || !titlePickerValueElement || !titlePickerPanelElement || !titleSearchElement || !titleOptionsElement) {
+		logger.warn('Movie picker setup skipped: required DOM elements were not found');
+		return;
+	}
+
+	// Load previously watched movies from local storage
+	const cachedMovies = getCachedMovies();
+	if (cachedMovies.length === 0) {
+		// Disable picker when there are no cached movies yet
+		titlePickerValueElement.textContent = 'Нет просмотренных фильмов';
+		titlePickerToggleElement.setAttribute('aria-expanded', 'false');
+		titlePickerToggleElement.disabled = true;
+		if (titlePickerArrowElement) titlePickerArrowElement.style.display = 'none';
+		return;
+	}
+
+	// Render initial picker state for the current movie
+	titleElement.classList.remove('hidden');
+	setMoviePickerValue(cachedMovies, currentMovieKey);
+	renderMovieOptions(cachedMovies, currentMovieKey);
+
+	let pointerStartX = 0;
+	let pointerStartY = 0;
+	let pointerMoved = false;
+
+	// Track pointer position to ignore drag-like clicks on the toggle
+	titlePickerToggleElement.addEventListener('mousedown', (event) => {
+		pointerStartX = event.clientX;
+		pointerStartY = event.clientY;
+		pointerMoved = false;
+	});
+
+	titlePickerToggleElement.addEventListener('mousemove', (event) => {
+		if ((event.buttons & 1) !== 1) return;
+
+		const deltaX = event.clientX - pointerStartX;
+		const deltaY = event.clientY - pointerStartY;
+		if (Math.hypot(deltaX, deltaY) > 3) pointerMoved = true;
+	});
+
+	titlePickerToggleElement.addEventListener('click', () => {
+		if (pointerMoved) return;
+
+		// Toggle picker panel visibility
+		const isOpen = titlePickerPanelElement.classList.contains('hidden');
+		toggleMoviePicker(isOpen);
+	});
+
+	// Filter available movies by the search query
+	titleSearchElement.addEventListener('input', () => {
+		const query = titleSearchElement.value.trim().toLowerCase();
+		const filteredMovies = query ? cachedMovies.filter((movie) => movie.title.toLowerCase().includes(query)) : cachedMovies;
+
+		renderMovieOptions(filteredMovies, currentMovieKey);
+	});
+
+	// Load selected movie from cache and re-initialize the player
+	titleOptionsElement.addEventListener('click', (event) => {
+		const option = event.target.closest('.movie-option');
+		if (!option) return;
+
+		const selectedMovieKey = option.dataset.key;
+		if (!selectedMovieKey || selectedMovieKey === currentMovieKey) return;
+
+		const selectedMovieData = localStorage.getItem(selectedMovieKey);
+		if (!selectedMovieData) return;
+
+		let movieData = null;
+		try {
+			movieData = JSON.parse(selectedMovieData);
+		} catch {
+			return;
+		}
+
+		if (typeof movieData !== 'object' || movieData === null) return;
+
+		currentMovieKey = selectedMovieKey;
+		setSearchParam('movie', selectedMovieKey);
+		setMoviePickerValue(cachedMovies, currentMovieKey);
+		renderMovieOptions(cachedMovies, currentMovieKey);
+		toggleMoviePicker(false);
+		titleSearchElement.value = '';
+		init(movieData);
+	});
+
+	// Close picker when clicking outside of the title area
+	document.addEventListener('click', (event) => {
+		if (!titleElement.contains(event.target)) toggleMoviePicker(false);
+	});
+}
+
+/**
  * Setup the script by setting up timeout and getting cached movie data from URL
  */
 function setup() {
 	try {
 		logger.info('Setup started');
+		setupMoviePicker();
 
 		// Get cached movie key from URL
 		const movieKey = getSearchParam('movie');
 		if (!movieKey) return;
+		currentMovieKey = movieKey;
 
 		// Get movie data from cache
 		const cachedData = localStorage.getItem(movieKey);
