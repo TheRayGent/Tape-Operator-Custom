@@ -3,7 +3,7 @@
 // @namespace       tape-operator
 // @author          Kirlovon
 // @description     Watch movies on IMDB, TMDB, Kinopoisk and Letterboxd!
-// @version         3.3.2
+// @version         3.3.3
 // @icon            https://github.com/Kirlovon/Tape-Operator/raw/main/assets/favicon.png
 // @updateURL       https://github.com/Kirlovon/Tape-Operator/raw/main/userscript/tape-operator.user.js
 // @downloadURL     https://github.com/Kirlovon/Tape-Operator/raw/main/userscript/tape-operator.user.js
@@ -30,7 +30,8 @@
 	const VERSION = GM.info?.script?.version;
 
 	// Banner image
-	const BANNER_IMAGE = GM_getResourceURL('BANNER_IMAGE');
+	// Violentmonkey: false forces data URL to avoid CSP issues with blob
+	const BANNER_IMAGE = GM_getResourceURL('BANNER_IMAGE', false);
 
 	// URL to the player
 	const PLAYER_URL = 'https://tapeop.dev/';
