@@ -65,7 +65,7 @@ async function init(data, scriptVersion) {
 
 		// Check if server returned any sources
 		if (sources.length === 0) {
-			showPlayerText('Фильм не найден :(');
+			showPlayerText('Movie not found :(');
 			return;
 		}
 
