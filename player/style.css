@@ -253,7 +253,7 @@ a:focus {
 	z-index: 10000;
 	top: 3rem;
 	right: 0.5rem;
-	width: min(calc(100% - 1rem), 320px);
+	width: calc(100% - 1rem);
 	box-sizing: border-box;
 	padding: 6px;
 	border-radius: 8px;
