@@ -209,7 +209,7 @@ a:focus {
 }
 
 #watched-movies-toggle.open #watched-movies-arrow {
-	transform: translateY(-0.15rem) rotate(45deg);
+	transform: translateY(0.1rem) rotate(45deg) scale(-100%);
 }
 
 #watched-movies-toggle:disabled {
@@ -224,7 +224,7 @@ a:focus {
 	margin-left: 0.1rem;
 	border-right: 1.5px solid currentColor;
 	border-bottom: 1.5px solid currentColor;
-	transform: translateY(0.15rem) rotate(45deg) scale(-100%);
+	transform: translateY(-0.1rem) rotate(45deg);
 	transform-origin: center;
 	transition: transform 0.15s ease;
 }
@@ -317,8 +317,8 @@ a:focus {
 	padding: 0.4rem;
 	border-radius: 4px;
 	font-size: 0.8rem;
-	line-height: 1.2rem;
-	min-height: fit-content;
+	line-height: 1rem;
+	height: 1rem;
 	color: var(--color-white);
 	text-decoration: none;
 	white-space: nowrap;
