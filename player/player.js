@@ -105,24 +105,81 @@ async function fetchSources(movieData) {
 	// Add movie and sources data to the request
 	Object.entries(movieData).forEach(([key, value]) => apiURL.searchParams.set(key, value));
 
-	// Send request to the API
-	const request = await fetch(apiURL, { method: 'GET' });
-	if (!request.ok || request?.status !== 200) throw new Error(`Request failed with status ${request.status}`);
+	try {
+		// Send request to the API
+		const request = await fetch(apiURL, { method: 'GET' });
+		if (!request.ok || request?.status !== 200) throw new Error(`Request failed with status ${request.status}`);
 
-	let response = await request.json();
-	if (typeof response !== 'object' || !Array.isArray(response?.data) || response === null) {
-		throw new Error(`Invalid response type: "${typeof response}"`);
+		let response = await request.json();
+		if (typeof response !== 'object' || !Array.isArray(response?.data) || response === null) {
+			throw new Error(`Invalid response type: "${typeof response}"`);
+		}
+
+		// Remove players without full data
+		let playersData = response.data;
+		playersData = playersData.filter((player) => player?.iframeUrl && player?.type);
+
+		// Put player Turbo at the end of the list (as it usually doesn't work)
+		const turboIndex = playersData.findIndex((player) => player.type.toLowerCase() === 'turbo');
+		if (turboIndex !== -1) playersData.push(playersData.splice(turboIndex, 1)[0]);
+
+		// Cache successful response
+		cacheSourcesForMovie(movieData, playersData);
+
+		return playersData;
+	} catch (error) {
+		logger.warn('Error fetching Kinobox API, attempting to use cached sources', error);
+		const cached = getCachedSourcesForMovie(movieData);
+		if (cached && cached.length > 0) {
+			logger.info('Using cached Kinobox sources');
+			return cached;
+		}
+
+		// No cache available — rethrow to let caller handle
+		throw error;
 	}
+}
 
-	// Remove players without full data
-	let playersData = response.data;
-	playersData = playersData.filter((player) => player?.iframeUrl && player?.type);
+/**
+ * Cache sources for a movie in localStorage
+ * @param {object} movieData
+ * @param {object[]} sourcesData
+ */
+function cacheSourcesForMovie(movieData, sourcesData) {
+	try {
+		const key = hashCode(JSON.stringify(movieData));
+		const cached = JSON.parse(localStorage.getItem(key) || '{}');
+		
+		// Only update if sources have changed
+		if (JSON.stringify(cached.sources) !== JSON.stringify(sourcesData)) {
+			cached.sources = sourcesData;
+			localStorage.setItem(key, JSON.stringify(cached));
+		}
+	} catch (error) {
+		logger.warn('Failed to cache sources', error);
+	}
+}
 
-	// Put player Turbo at the end of the list (as it usually doesn't work)
-	const turboIndex = playersData.findIndex((player) => player.type.toLowerCase() === 'turbo');
-	if (turboIndex !== -1) playersData.push(playersData.splice(turboIndex, 1)[0]);
-
-	return playersData;
+/**
+ * Get cached sources for a movie from localStorage
+ * @param {object} movieData
+ * @returns {object[]|null}
+ */
+function getCachedSourcesForMovie(movieData) {
+	try {
+		const key = hashCode(JSON.stringify(movieData));
+		const raw = localStorage.getItem(key);
+		if (!raw) return null;
+		const parsed = JSON.parse(raw);
+		if (!parsed || !Array.isArray(parsed.sources)) return null;
+		// Validate basic shape
+		const playersData = parsed.sources.filter((player) => player?.iframeUrl && player?.type);
+		if (playersData.length === 0) return null;
+		return playersData;
+	} catch (error) {
+		logger.warn('Failed to read cached sources', error);
+		return null;
+	}
 }
 
 /**
@@ -224,7 +281,15 @@ function cacheMovieData(movieData) {
 	const serialized = JSON.stringify(movieData);
 	const key = hashCode(serialized);
 
-	localStorage.setItem(key, serialized);
+	try {
+		// Keep existing sources if they exist
+		const cached = JSON.parse(localStorage.getItem(key) || '{}');
+		const dataToCache = { ...movieData, ...cached };
+		localStorage.setItem(key, JSON.stringify(dataToCache));
+	} catch (error) {
+		// Fallback: just save movie data
+		localStorage.setItem(key, serialized);
+	}
 	return key;
 }
 
