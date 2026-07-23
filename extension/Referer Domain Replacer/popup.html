@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { width: 300px; font-family: Arial, sans-serif; padding: 10px; margin: 0; }
+    h3 { margin-top: 0; color: #333; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+    .tab-button { flex: 1; padding: 8px 6px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; color: #333; cursor: pointer; text-align: center; }
+    .tab-button.active { background: #007bff; color: white; border-color: #007bff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .field { margin-bottom: 10px; }
+    label { display: block; font-size: 12px; margin-bottom: 4px; color: #666; }
+    input { width: 100%; padding: 6px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { width: 100%; padding: 8px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .status { font-size: 12px; color: green; text-align: center; margin-top: 8px; min-height: 18px; }
+    .status.error { color: #d63333; }
+    .small-note { font-size: 11px; color: #555; margin-bottom: 10px; }
+    .storage-actions button { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <button id="tabReferer" class="tab-button active">Referer</button>
+    <button id="tabStorage" class="tab-button">LocalStorage</button>
+  </div>
+
+  <div id="refererTab" class="tab-content active">
+    <h3>Настройка Referer</h3>
+    <div class="field">
+      <label for="sourceDomain">Какой домен искать (например, example.com):</label>
+      <input type="text" id="sourceDomain" placeholder="example.com">
+    </div>
+    <div class="field">
+      <label for="targetDomain">На какой заменять (например, domain.ru):</label>
+      <input type="text" id="targetDomain" placeholder="domain.ru">
+    </div>
+    <button id="saveBtn">Сохранить правила</button>
+  </div>
+
+  <div id="storageTab" class="tab-content">
+    <h3>LocalStorage</h3>
+    <div id="currentDomain" class="small-note">Текущий домен: не определён</div>
+    <div id="savedSourceDomain" class="small-note">Сохранённый домен-источник: не найден</div>
+    <div class="storage-actions">
+      <button id="saveLsBtn">Сохранить localStorage этого домена</button>
+      <button id="restoreLsBtn">Вставить сохранённый localStorage на текущий домен</button>
+    </div>
+    <div class="small-note">Зайдите на первый сайт и сохраните localStorage, затем откройте второй сайт и вставьте.</div>
+  </div>
+
+  <div id="status" class="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
