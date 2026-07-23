@@ -5,9 +5,9 @@
 // @author          TheRayGent
 // @description     Watch movies on IMDB, TMDB, Kinopoisk and Letterboxd!
 // @version         3.3.4
-// @icon            https://github.com/Kirlovon/Tape-Operator/raw/main/assets/favicon.png
-// @updateURL       https://github.com/Kirlovon/Tape-Operator/raw/main/userscript/tape-operator.user.js
-// @downloadURL     https://github.com/Kirlovon/Tape-Operator/raw/main/userscript/tape-operator.user.js
+// @icon            https://github.com/TheRayGent/Tape-Operator-Custom/raw/main/assets/favicon.png
+// @updateURL       https://github.com/TheRayGent/Tape-Operator-Custom/raw/main/userscript/tape-operator.user.js
+// @downloadURL     https://github.com/TheRayGent/Tape-Operator-Custom/raw/main/userscript/tape-operator.user.js
 // @run-at          document-idle
 // @grant           GM.info
 // @grant           GM.setValue
