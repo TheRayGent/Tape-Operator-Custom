@@ -23,8 +23,8 @@
 // @match           *://letterboxd.com/film/*
 // @match           *://tapeop.dev/*
 // @match           *://trgtapeop.mooo.com/*
-// @match           *://localhost*
-// @match           *://127.0.0.1*
+// @match           *://localhost/*
+// @match           *://127.0.0.1/*
 
 // ==/UserScript==
 
